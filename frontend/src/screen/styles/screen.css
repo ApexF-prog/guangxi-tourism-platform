@@ -1,0 +1,446 @@
+/* ===== 大屏全局样式 =====
+   适配方案：1rem = 100vw / 120（1920 宽时 1rem = 16px），
+   同时用 100vh 限高，避免 16:9 以外的屏幕纵向溢出。
+   相比 transform: scale() 缩放，rem + flex 让每个图表容器都是真实像素，
+   canvas 不会被拉伸模糊，图表也更清晰。
+   大屏样式全部限定在 .screen-mode 下（由 Screen.vue 挂载时加到 <html> 上，
+   卸载时移除），避免污染旅游网站主站样式。 */
+
+:root {
+  --bg-0: #030d1a;
+  --bg-1: #06182b;
+  --panel-bg: rgba(8, 30, 53, 0.62);
+  --panel-bg-2: rgba(6, 24, 43, 0.9);
+  --line: rgba(56, 189, 248, 0.22);
+  --line-strong: rgba(56, 189, 248, 0.55);
+  --cyan: #38e8ff;
+  --teal: #2dd4bf;
+  --amber: #f2c14e;
+  --pink: #f472b6;
+  --text: #e2f4ff;
+  --text-dim: #cbe4f7;
+  --text-mute: #aecbe4;
+  --num-font: "Bahnschrift", "DIN Alternate", "Arial Narrow", Arial, sans-serif;
+}
+
+.screen,
+.screen * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 1920 宽时 1rem = 16px；窄屏等比缩小，短屏限高防溢出。
+   仅在大屏路由激活期间生效 */
+html.screen-mode {
+  font-size: min(calc(100vw / 120), calc(100vh / 67.5));
+}
+
+html.screen-mode body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", "Source Han Sans SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.screen-mode #app {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== 大屏外壳 ===== */
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 0 1.25rem 1rem;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(20, 92, 148, 0.45) 0%, rgba(6, 24, 43, 0) 60%),
+    radial-gradient(90% 60% at 50% 108%, rgba(13, 84, 122, 0.35) 0%, rgba(3, 13, 26, 0) 70%),
+    linear-gradient(180deg, #06182b 0%, #04101f 55%, #030d1a 100%);
+}
+
+/* 背景网格 + 光晕 */
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: radial-gradient(75% 65% at 50% 45%, #000 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(75% 65% at 50% 45%, #000 20%, transparent 100%);
+}
+
+/* ===== 顶部标题 ===== */
+.screen-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 5.25rem;
+  flex: none;
+}
+
+.header-side {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.header-side--right {
+  justify-content: flex-end;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 0.2rem;
+  background: rgba(10, 40, 68, 0.55);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.header-badge i {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0.4rem var(--teal);
+  animation: pulse 2s infinite;
+}
+
+.header-clock {
+  font-family: var(--num-font);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  color: var(--cyan);
+}
+
+.title-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2.5rem;
+}
+
+.title-wrap::before,
+.title-wrap::after {
+  content: "";
+  position: absolute;
+  top: 52%;
+  width: 2.2rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-strong));
+}
+
+.title-wrap::before {
+  left: 0;
+}
+
+.title-wrap::after {
+  right: 0;
+  background: linear-gradient(270deg, transparent, var(--line-strong));
+}
+
+.screen-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  background: linear-gradient(180deg, #ffffff 10%, #9ce8ff 55%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 2.4rem rgba(56, 189, 248, 0.45);
+  white-space: nowrap;
+}
+
+.screen-subtitle {
+  margin-top: 0.35rem;
+  font-family: var(--num-font);
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: rgba(125, 211, 252, 0.65);
+  white-space: nowrap;
+}
+
+/* ===== 主体三栏 ===== */
+.screen-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 24.5rem minmax(0, 1fr) 24.5rem;
+  gap: 0.9rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 0;
+}
+
+.center-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 0;
+}
+
+/* ===== 通用面板 ===== */
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0.7rem 0.85rem 0.55rem;
+  background:
+    linear-gradient(180deg, rgba(18, 58, 92, 0.55) 0%, rgba(6, 24, 43, 0.72) 42%, rgba(5, 20, 36, 0.82) 100%);
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  box-shadow:
+    inset 0 0 2rem rgba(12, 74, 116, 0.35),
+    0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+}
+
+.panel__corner {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-color: var(--cyan);
+  border-style: solid;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.panel__corner.tl {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+
+.panel__corner.tr {
+  top: -1px;
+  right: -1px;
+  border-width: 1px 1px 0 0;
+}
+
+.panel__corner.bl {
+  bottom: -1px;
+  left: -1px;
+  border-width: 0 0 1px 1px;
+}
+
+.panel__corner.br {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
+}
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: none;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.panel__dot {
+  width: 0.3rem;
+  height: 0.85rem;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--cyan), rgba(56, 232, 255, 0.15));
+  box-shadow: 0 0 0.5rem rgba(56, 232, 255, 0.7);
+  align-self: center;
+}
+
+.panel__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #d8f2ff;
+}
+
+.panel__sub {
+  margin-left: auto;
+  font-family: var(--num-font);
+  font-size: 0.68rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+}
+
+.panel__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.2rem;
+}
+
+.chart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== KPI 卡片条 ===== */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  flex: none;
+  height: 5.4rem;
+}
+
+.kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0 0.85rem;
+  background: linear-gradient(135deg, rgba(17, 62, 96, 0.75), rgba(6, 24, 43, 0.6));
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--cyan);
+  border-radius: 0.2rem;
+  overflow: hidden;
+}
+
+.kpi::after {
+  content: "";
+  position: absolute;
+  right: -1.5rem;
+  top: -1.5rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 232, 255, 0.22), transparent 70%);
+}
+
+.kpi__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.kpi__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-family: var(--num-font);
+  font-size: 1.72rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 0 0 0.9rem rgba(56, 232, 255, 0.5);
+}
+
+.kpi__unit {
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  text-shadow: none;
+}
+
+.kpi--amber {
+  border-left-color: var(--amber);
+}
+
+.kpi--amber .kpi__value {
+  text-shadow: 0 0 0.9rem rgba(242, 193, 78, 0.45);
+}
+
+.kpi--teal {
+  border-left-color: var(--teal);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+/* 地图面板内的辐射光晕 */
+.map-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(48% 46% at 50% 52%, rgba(18, 120, 168, 0.35) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+/* 地图左上角小标签 */
+.map-tags {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.6rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  pointer-events: none;
+}
+
+.map-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.map-tag b {
+  font-family: var(--num-font);
+  font-size: 0.95rem;
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.map-tag i {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 0.45rem var(--amber);
+}
+
+/* 窄屏兜底：低于 1200px 时隐藏左右栏，只保留地图（课件投屏偶发情况） */
+@media (max-width: 900px) {
+  html {
+    font-size: calc(100vw / 78);
+  }
+  .screen-main {
+    grid-template-columns: 1fr;
+  }
+  .side-col {
+    display: none;
+  }
+}

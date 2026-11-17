@@ -1,0 +1,58 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gxtourism-backend
+  # 本地密钥放在 application-local.yml（已加入 .gitignore，不会进版本库）
+  # 部署时用环境变量覆盖，参见 docs/SECURITY.md
+  profiles:
+    include: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/guangxi_tourism?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+
+# 在线接口文档：/swagger-ui/index.html
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+
+gxtourism:
+  jwt:
+    secret: ${JWT_SECRET:}
+    expire-hours: 72
+
+  # AI 智选（DeepSeek；异常自动降级本地推荐）
+  ai:
+    base-url: ${AI_BASE_URL:https://api.deepseek.com/v1}
+    api-key: ${AI_API_KEY:}
+    model: ${AI_MODEL:deepseek-chat}
+
+  # 支付宝沙箱收银台（默认手机网站支付 wap.pay）
+  alipay:
+    app-id: ${ALIPAY_APP_ID:9021000171601705}
+    gateway-host: ${ALIPAY_GATEWAY:openapi-sandbox.dl.alipaydev.com}
+    # 若报"签名错误/无权限"，把网关换成老版 openapi.alipaydev.com 再重启
+    merchant-private-key: ${ALIPAY_MERCHANT_PRIVATE_KEY:}
+    alipay-public-key: ${ALIPAY_PUBLIC_KEY:}
+    # 支付成功后浏览器跳回的前端页面（部署后改成 https://你的前端域名/pay/return）
+    return-url: ${ALIPAY_RETURN_URL:http://localhost:5174/pay/return}
+    # 手机网站支付「中途退出」回跳地址
+    quit-url: ${ALIPAY_QUIT_URL:http://localhost:5174/orders}
+    # 收银台通道：wap（默认）| page（电脑网站支付）。
+    # 沙箱 page.pay 通道维护期会稳定返回 ACQ.SYSTEM_ERROR，此时 wap.pay 仍可正常打开收银台；
+    # 网关恢复后如需电脑网站支付，设 ALIPAY_CHANNEL=page 即可切回，验签/查单/通知逻辑不变。
+    channel: ${ALIPAY_CHANNEL:wap}
+    # 服务端异步通知（支付宝服务器直连，必须是公网可达地址）
+    notify-url: ${ALIPAY_NOTIFY_URL:}

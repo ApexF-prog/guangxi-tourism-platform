@@ -1,0 +1,25 @@
+# ---- 构建产物 ----
+**/target/
+**/dist/
+**/node_modules/
+**/.vite/
+
+# ---- 密钥与本地配置（严禁提交）----
+backend/src/main/resources/application-local.yml
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# ---- IDE / 系统 ----
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.log
+
+# ---- 大体积视频素材（超出 GitHub 单文件 100MB 限制）----
+*.mp4
